@@ -1,0 +1,73 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const writeups = [
+  {
+    title: "PhishStrike",
+    platform: "CyberDefenders",
+    type: "Threat Intel • Phishing Analysis",
+    description: "Investigation of a phishing email targeting faculty members. Full header analysis, IOC extraction, and malware distribution chain.",
+    href: "/writeups/phishstrike",
+    status: "Ready"
+  },
+  {
+    title: "Tempest",
+    platform: "TryHackMe",
+    type: "SOC L1 Capstone • Full Attack Chain",
+    description: "Endpoint and network forensics investigation of a complete compromise. From malicious document to privilege escalation and persistence.",
+    href: "/writeups/tempest",
+    status: "Ready"
+  },
+  {
+    title: "Boogeyman 1",
+    platform: "TryHackMe",
+    type: "SOC L1 Capstone • Phishing + Exfiltration",
+    description: "Phishing investigation leading to malware execution and DNS-based data exfiltration.",
+    href: "/writeups/boogeyman-1",
+    status: "Ready"
+  },
+  {
+    title: "Boogeyman 2",
+    platform: "TryHackMe",
+    type: "SOC L1 Capstone • Memory Forensics",
+    description: "Spear-phishing against HR followed by memory analysis of the compromised workstation.",
+    href: "/writeups/boogeyman-2",
+    status: "Ready"
+  }
+];
+---
+
+<Layout>
+  <main class="max-w-3xl mx-auto px-6 py-16">
+    <h1 class="text-3xl font-bold mb-2">Writeups</h1>
+    <p class="text-slate-500 mb-12">
+      Each investigation is treated as a real incident — walkthrough + formal Incident Report.
+    </p>
+
+    <div class="space-y-6">
+      {writeups.map(item => (
+        <a 
+          href={item.href}
+          class="block p-6 rounded-xl border border-slate-800 hover:border-cyan-700/60 hover:bg-slate-900/40 transition group"
+        >
+          <div class="flex items-start justify-between gap-4 mb-3">
+            <div>
+              <h2 class="text-xl font-semibold text-white group-hover:text-cyan-400 transition">
+                {item.title}
+              </h2>
+              <p class="text-sm text-slate-500 mt-1">
+                {item.platform} · {item.type}
+              </p>
+            </div>
+            <span class="text-xs font-medium text-cyan-500 bg-cyan-500/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+              {item.status}
+            </span>
+          </div>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            {item.description}
+          </p>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>
