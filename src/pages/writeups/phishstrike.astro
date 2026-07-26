@@ -4,13 +4,145 @@ import Layout from '../../layouts/Layout.astro';
 
 <Layout>
   <main class="max-w-3xl mx-auto px-6 py-16">
-    <a href="/writeups" class="text-sm text-cyan-500 hover:text-cyan-400 mb-8 inline-block">← Back to Writeups</a>
-    
-    <h1 class="text-3xl font-bold mb-2">PhishStrike</h1>
-    <p class="text-slate-500 mb-8">CyberDefenders · Threat Intel · Phishing Analysis</p>
+    <a href="/writeups" class="text-sm text-cyan-500 hover:text-cyan-400 mb-8 inline-block">
+      ← Back to Writeups
+    </a>
 
-    <div class="prose prose-invert max-w-none">
-      <p class="text-slate-400">Full walkthrough + formal Incident Report coming next.</p>
+    <!-- Header -->
+    <div class="mb-10">
+      <h1 class="text-3xl font-bold text-white mb-2">PhishStrike</h1>
+      <p class="text-slate-500 text-sm mb-4">
+        CyberDefenders · Threat Intel · Phishing Analysis
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full">Phishing</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full">Email Analysis</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full">Threat Intel</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full">IOC Extraction</span>
+      </div>
     </div>
+
+    <!-- Scenario -->
+    <section class="mb-12">
+      <h2 class="text-xl font-semibold text-white mb-4">Scenario</h2>
+      <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-6 text-slate-300 leading-relaxed">
+        <p>
+          As a cybersecurity analyst for an educational institution, you receive an alert about a phishing email targeting faculty members. 
+          The email, appearing from a trusted contact, claims a $625,000 purchase and provides a link to download an invoice. 
+          Your task is to investigate the email using Threat Intel tools, analyze the email headers, inspect the link for malicious content, 
+          identify Indicators of Compromise (IOCs), and document findings to prevent potential fraud.
+        </p>
+      </div>
+    </section>
+
+    <!-- Investigation -->
+    <section class="mb-14 space-y-12">
+      <h2 class="text-xl font-semibold text-white mb-2">Investigation</h2>
+
+      <!-- Q1 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">1. Sender IP with SPF softfail + DKIM fail</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          Analysis of the email headers shows the Authentication-Results section clearly listing an IP with SPF = softfail and DKIM = fail. 
+          Legitimate emails should almost never have values other than “Pass”.
+        </p>
+        <img src="/images/phishstrike/a904f1eb-3e6a-4555-9143-e8375a442174.png" alt="Authentication Results" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q2 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">2. Return-Path</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          The <code class="text-cyan-400">Return-Path</code> header (envelope sender) was examined. Threat actors often set this to their own address so that bounce messages or replies are delivered to them.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_05_08-LinkedIn_SOC_Analyst_Strategy_-_Grok.png" alt="Return-Path header" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q3 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">3. IP hosting the malicious file</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          The email body is HTML. The malicious “invoice” link is contained inside an anchor tag and points to the distribution server.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_08_06-LinkedIn_SOC_Analyst_Strategy_-_Grok.png" alt="Malicious link in email body" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q4 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">4. Malware family (Cryptocurrency miner)</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          URLHaus shows the malicious URL distributes multiple malware families: <strong>BitRAT</strong>, <strong>AsyncRAT</strong>, and <strong>CoinMiner</strong>.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_17_50-URLhaus___http___107.175.247.199_loader_install.exe.png" alt="URLHaus report" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q5 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">5. URLs requested by the cryptocurrency malware</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          Using the SHA-256 hash on VirusTotal → Relations tab reveals the URLs contacted by the sample.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_28_45-VirusTotal_-_File_-_453fb1c4b3b48361fa8a67dcedf1eaec39449cb5a146a7770c63d1dc0d75.png" alt="VirusTotal Relations" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q6 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">6. BitRAT persistence – Registry auto-run executable</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          VirusTotal Behavior → Registry actions shows the executable name written to the auto-run key.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_33_26-VirusTotal_-_File_-_bf7628695c2df7a3020034a065397592a1f8850e59f9a448b555bc1c8c63.png" alt="Registry actions" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q7 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">7. SHA-256 of the dropped autorun file</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          From the same VirusTotal report → Files Dropped section.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_38_55-VirusTotal_-_File_-_bf7628695c2df7a3020034a065397592a1f8850e59f9a448b555bc1c8c63.png" alt="Files Dropped" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q8 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">8. HTTP request used by the loader to retrieve BitRAT</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          VirusTotal Behavior → Network communications shows the exact HTTP request.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_44_04-VirusTotal_-_File_-_bf7628695c2df7a3020034a065397592a1f8850e59f9a448b555bc1c8c63.png" alt="HTTP requests" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q9 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">9. PowerShell delay (seconds)</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          The process tree shows a PowerShell process spawned with a base64-encoded command. Decoded with CyberChef.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_16_49_00-From_Base64_Remove_null_bytes_-_CyberChef.png" alt="CyberChef decode" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q10 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">10. BitRAT C2 domain</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          VirusTotal DNS section was incomplete. The any.run detonation report provided the clear C2 domain.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_17_03_04-Analysis_86c57967785fe8dbcdf209fb564f9a85.exe_(MD5__86C57967785FE8DBCDF209FB564F.png" alt="any.run C2" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+
+      <!-- Q11 -->
+      <div>
+        <h3 class="text-lg font-medium text-white mb-3">11. AsyncRAT Telegram Bot ID</h3>
+        <p class="text-slate-400 mb-4 leading-relaxed">
+          From MalwareBazaar → Hatching Triage report, the exact GET request to Telegram’s API reveals the Bot ID.
+        </p>
+        <img src="/images/phishstrike/2026-06-16_17_11_48-bitrat___5ca468704e7ccb8e1b37c0f7595c54df4e2f4035345b6e442e8bd4e11c58f791___Tria.png" alt="Telegram Bot ID" class="rounded-lg border border-slate-800 w-full" />
+      </div>
+    </section>
+
+    <!-- Footer note -->
+    <section class="pt-8 border-t border-slate-800 text-sm text-slate-500">
+      <p>Investigation performed as part of the CyberDefenders PhishStrike lab.</p>
+    </section>
   </main>
 </Layout>
